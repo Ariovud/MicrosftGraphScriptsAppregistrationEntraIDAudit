@@ -1,0 +1,14 @@
+$logs = Search-UnifiedAuditLog -StartDate (Get-Date).AddDays(-365) -EndDate (Get-Date) -Operations "Add application","Update application" -ResultSize 5000
+$appUpdates = @()
+foreach ($log in $logs) {
+    $data = $log.AuditData | ConvertFrom-Json
+    $appUpdates += [PSCustomObject]@{AppId = $data.ObjectId; User = $log.UserIds; Timestamp = $data.CreationTime}
+}
+$appUpdates = $appUpdates | Sort-Object AppId, Timestamp -Descending | Group-Object AppId | ForEach-Object { $_.Group[0] }
+foreach ($update in $appUpdates) {
+    $app = $apps | Where-Object { $_.Id -eq $update.AppId }
+    if ($app -and -not $app.Owners) {
+        $userId = (Get-MgUser -UserId $update.User).Id
+        New-MgApplicationOwner -ApplicationId $app.Id -DirectoryObjectId $userId
+    }
+}
