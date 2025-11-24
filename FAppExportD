@@ -1,0 +1,7 @@
+Install-Module Microsoft.Graph -Scope CurrentUser
+Connect-MgGraph -Scopes "Application.Read.All","Directory.Read.All","AuditLog.Read.All"
+$apps = Get-MgApplication -All | Select-Object Id, AppId, DisplayName, CreatedDateTime,
+        @{N="Owners";E={(Get-MgApplicationOwner -ApplicationId $_.Id).AdditionalProperties["displayName"] -join "; "}},
+        SignInAudience, Web, Spa, RequiredResourceAccess, PasswordCredentials, KeyCredentials,
+        @{N="LastSignIn";E={(Get-MgApplication -ApplicationId $_.Id -Property extensionProperties).ExtensionProperties['lastSignInDateTime']}}
+$apps | Export-Csv "All_App_Registrations_Detailed_2025.csv" -NoTypeInformation
