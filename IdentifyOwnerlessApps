@@ -1,0 +1,2 @@
+$ownerless = $apps | Where-Object { $_.Owners -eq "" -or $_.Owners -eq $null }
+$ownerless | Export-Csv "Ownerless_Apps.csv" -NoTypeInformation
