@@ -1,0 +1,6 @@
+$highRisk = $apps | Where-Object { $_.RequiredResourceAccess.ResourceAccess.Id -match ".*\.ReadWrite\.All" -or $_.NoSignInLast180Days }
+foreach ($app in $highRisk) {
+    Update-MgApplication -ApplicationId $app.Id -DisabledByMicrosoftStatus "DisabledByAdministrator"
+    Remove-MgApplicationPassword -ApplicationId $app.Id -All
+    Remove-MgApplicationKey -ApplicationId $app.Id -All
+}
